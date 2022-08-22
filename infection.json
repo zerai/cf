@@ -1,0 +1,18 @@
+{
+    "$schema": "https://raw.githubusercontent.com/infection/infection/0.26.13/resources/schema.json",
+    "source": {
+        "directories": [
+            "src"
+        ]
+    },
+    "mutators": {
+        "@default": true
+    },
+    "phpUnit": {
+        "configDir": "."
+    },
+    "minMsi": 60,
+    "minCoveredMsi": 60,
+    "timeout": 25,
+    "testFramework":"phpunit"
+}

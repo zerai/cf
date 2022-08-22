@@ -1,0 +1,5 @@
+{
+    "require-dev": {
+        "phparkitect/phparkitect": "^0.2.30"
+    }
+}
