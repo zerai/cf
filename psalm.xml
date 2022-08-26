@@ -17,6 +17,10 @@
     <projectFiles>
         <directory name="src" />
         <directory name="tests/"/>
+        <directory name="_iam/src" />
+        <directory name="_iam/tests/"/>
+        <directory name="_vehiclereporting/src" />
+        <directory name="_vehiclereporting/tests/"/>
         <ignoreFiles>
             <file name="src/Kernel.php"/>
             <file name="tests/bootstrap.php"/>
