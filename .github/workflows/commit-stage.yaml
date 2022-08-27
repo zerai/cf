@@ -18,14 +18,17 @@ jobs:
     name: App unit test
     runs-on: ubuntu-18.04
     timeout-minutes: 3
+    continue-on-error: ${{ matrix.experimental }}
     strategy:
       matrix:
         php:
           - '8.1'
-          - '8.2'
+        coverage: [true]
+        experimental: [false]
         include:
-          - php: '8.1'
-            coverage: true
+          - php: '8.2'
+            coverage: false
+            experimental: true
       fail-fast: true
     steps:
       - uses: actions/checkout@v3
