@@ -1,7 +1,12 @@
 version: '3.8'
 
 services:
-###> doctrine/doctrine-bundle ###
+  app:
+    depends_on:
+      - database
+      - test-database
+
+  ###> doctrine/doctrine-bundle ###
   database:
     ports:
       - "5432"
@@ -12,3 +17,13 @@ services:
     image: schickling/mailcatcher
     ports: [1025, 1080]
 ###< symfony/mailer ###
+
+
+  test-database:
+    image: postgres:${POSTGRES_VERSION:-14}-alpine
+    ports:
+      - "5432"
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-app_test}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-db-password}
+      POSTGRES_USER: ${POSTGRES_USER:-db-user}

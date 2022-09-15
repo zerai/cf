@@ -6,5 +6,11 @@ controllers:
 api_login_check:
     path: /api/login_check
 
+api_refresh_token:
+    path: /api/token/refresh
+
 wapi_login_check:
     path: /wapi/login_check
+
+wapi_refresh_token:
+    path: /wapi/token/refresh
