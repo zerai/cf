@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<files psalm-version="4.26.0@6998fabb2bf528b65777bf9941920888d23c03ac">
+  <file src="src/DataFixtures/Dev/AdminBaseUserFixtures.php">
+    <PropertyNotSetInConstructor occurrences="1">
+      <code>AdminBaseUserFixtures</code>
+    </PropertyNotSetInConstructor>
+  </file>
+  <file src="src/Entity/BaseUser.php">
+    <InvalidNullableReturnType occurrences="1">
+      <code>string</code>
+    </InvalidNullableReturnType>
+    <MissingReturnType occurrences="1">
+      <code>eraseCredentials</code>
+    </MissingReturnType>
+    <NullableReturnStatement occurrences="1">
+      <code>$this-&gt;password</code>
+    </NullableReturnStatement>
+  </file>
+</files>
