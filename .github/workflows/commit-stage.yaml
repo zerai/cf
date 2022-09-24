@@ -12,6 +12,15 @@ env:
   COVERAGE_APP_UNIT_ARTIFATC_NAME: 'Coverage-reports-app-unit-on-SHA'
   COVERAGE_CLOVER_APP_UNIT_FILENAME: 'coverage-app-unit-test-clover.xml'
   COVERAGE_LOGJUNIT_APP_UNIT_FILENAME: 'coverage-app-unit-test-junit.xml'
+  # IAM COVERAGE FILES
+  COVERAGE_IAM_UNIT_ARTIFATC_NAME: 'Coverage-reports-iam-unit-on-SHA'
+  COVERAGE_CLOVER_IAM_UNIT_FILENAME: 'coverage-iam-unit-test-clover.xml'
+  COVERAGE_LOGJUNIT_IAM_UNIT_FILENAME: 'coverage-iam-unit-test-junit.xml'
+  # VR COVERAGE FILES (Vehicle Reporting)
+  COVERAGE_VR_UNIT_ARTIFATC_NAME: 'Coverage-reports-vr-unit-on-SHA'
+  COVERAGE_CLOVER_VR_UNIT_FILENAME: 'coverage-vr-unit-test-clover.xml'
+  COVERAGE_LOGJUNIT_VR_UNIT_FILENAME: 'coverage-vr-unit-test-junit.xml'
+
 
 jobs:
   app-unit-test:
@@ -88,6 +97,36 @@ jobs:
           bin/phpunit --testsuite app-unit \
           --coverage-clover $COVERAGE_CLOVER_APP_UNIT_FILENAME \
           --log-junit $COVERAGE_LOGJUNIT_APP_UNIT_FILENAME
+        env:
+          SYMFONY_DEPRECATIONS_HELPER: disabled
+
+      - name: Run IAM unit test
+        if: (!matrix.coverage)
+        run: bin/phpunit --testsuite iam-unit
+        env:
+          SYMFONY_DEPRECATIONS_HELPER: disabled
+
+      - name: Run IAM unit test suite WITH COVERAGE
+        if: matrix.coverage
+        run: |
+          bin/phpunit --testsuite iam-unit \
+          --coverage-clover $COVERAGE_CLOVER_IAM_UNIT_FILENAME \
+          --log-junit $COVERAGE_LOGJUNIT_IAM_UNIT_FILENAME
+        env:
+          SYMFONY_DEPRECATIONS_HELPER: disabled
+
+      - name: Run VEHICLE-REPORTING unit test
+        if: (!matrix.coverage)
+        run: bin/phpunit --testsuite vr-unit
+        env:
+          SYMFONY_DEPRECATIONS_HELPER: disabled
+
+      - name: Run VEHICLE-REPORTING unit test suite WITH COVERAGE
+        if: matrix.coverage
+        run: |
+          bin/phpunit --testsuite vr-unit \
+          --coverage-clover $COVERAGE_CLOVER_VR_UNIT_FILENAME \
+          --log-junit $COVERAGE_LOGJUNIT_VR_UNIT_FILENAME
         env:
           SYMFONY_DEPRECATIONS_HELPER: disabled
 

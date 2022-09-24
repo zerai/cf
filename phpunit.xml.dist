@@ -24,11 +24,19 @@
         <testsuite name="app-unit">
             <directory>./tests/Unit</directory>
         </testsuite>
+        <testsuite name="iam-unit">
+            <directory>./_iam/tests/Unit</directory>
+        </testsuite>
+        <testsuite name="vr-unit">
+            <directory>./_vehiclereporting/tests/Unit</directory>
+        </testsuite>
     </testsuites>
 
     <coverage processUncoveredFiles="true">
         <include>
             <directory suffix=".php">./src</directory>
+            <directory suffix=".php">./_iam/src</directory>
+            <directory suffix=".php">./_vehiclereporting/src</directory>
         </include>
     </coverage>
 
