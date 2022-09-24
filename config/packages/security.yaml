@@ -17,6 +17,10 @@ security:
             security: false
 
 
+        wapi-refresh:
+            pattern:  ^/wapi/token/refresh
+            stateless: true
+            refresh_jwt: ~
 
         wapi-login:
             pattern: ^/wapi/login
@@ -38,6 +42,11 @@ security:
             pattern: ^/wapi
             stateless: true
             jwt: ~
+
+        api-refresh:
+            pattern:  ^/api/token/refresh
+            stateless: true
+            refresh_jwt: ~
 
         api-login:
             pattern: ^/api/login
@@ -74,6 +83,7 @@ security:
         - { path: ^/wapi/token/refresh, roles: PUBLIC_ACCESS }
         - { path: ^/wapi/register, roles: PUBLIC_ACCESS }
         - { path: ^/api/login, roles: PUBLIC_ACCESS }
+        - { path: ^/api/token/refresh, roles: PUBLIC_ACCESS }
         - { path: ^/wapi,       roles: IS_AUTHENTICATED_FULLY }
         - { path: ^/api,       roles: IS_AUTHENTICATED_FULLY }
         # - { path: ^/admin, roles: ROLE_ADMIN }

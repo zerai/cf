@@ -12,7 +12,7 @@ class ApiAutenticationTest extends WebTestCase
      * @param string $username
      * @param string $password
      *
-     * return \Symfony\Bundle\FrameworkBundle\Client
+     * @return \Symfony\Bundle\FrameworkBundle\KernelBrowser
      */
     protected function createAuthenticatedClient($username = 'user', $password = 'password')
     {
@@ -28,22 +28,72 @@ class ApiAutenticationTest extends WebTestCase
             json_encode([
                 'username' => $username,
                 'password' => $password,
-            ])
+            ], JSON_THROW_ON_ERROR)
         );
 
-        echo $client->getResponse()->getContent();
-        $data = json_decode($client->getResponse()->getContent(), true);
+        $data = json_decode((string) $client->getResponse()->getContent(), true, 512, JSON_THROW_ON_ERROR);
 
         $client->setServerParameter('HTTP_Authorization', sprintf('Bearer %s', $data['token']));
 
         return $client;
     }
 
-    public function testGetSecuredPages()
+    public function testDenyAccessToSecuredApiEndopint(): void
+    {
+        $client = static::createClient();
+        $client->request('GET', '/api/placeholder');
+
+        self::assertResponseStatusCodeSame(401);
+    }
+
+    public function testAccessSecuredApiEndopintWithToken(): void
     {
         $client = $this->createAuthenticatedClient('admin@example.com', 'admin');
-        $client->request('GET', '/wapi/placeholder');
+        $client->request('GET', '/api/placeholder');
 
         self::assertResponseIsSuccessful();
+    }
+
+    public function testRefreshToken(): void
+    {
+        $client = static::createClient();
+        $client->request(
+            'POST',
+            '/api/login_check',
+            [],
+            [],
+            [
+                'CONTENT_TYPE' => 'application/json',
+            ],
+            json_encode([
+                'username' => 'admin@example.com',
+                'password' => 'admin',
+            ])
+        );
+
+        $data = json_decode((string) $client->getResponse()->getContent(), true, 512, JSON_THROW_ON_ERROR);
+
+        $refreshToken = $data['refresh_token'];
+
+        $client->request(
+            'POST',
+            '/api/token/refresh',
+            [],
+            [],
+            [
+                'CONTENT_TYPE' => 'application/json',
+            ],
+            json_encode([
+                'refresh_token' => $refreshToken,
+
+            ], JSON_THROW_ON_ERROR),
+        );
+
+        $responseData = json_decode((string) $client->getResponse()->getContent(), true, 512, JSON_THROW_ON_ERROR);
+
+        self::assertResponseIsSuccessful();
+
+        self::assertArrayHasKey('token', $responseData);
+        self::assertArrayHasKey('refresh_token', $responseData);
     }
 }

@@ -12,7 +12,7 @@ class WapiAutenticationTest extends WebTestCase
      * @param string $username
      * @param string $password
      *
-     * return \Symfony\Bundle\FrameworkBundle\Client
+     * @return \Symfony\Bundle\FrameworkBundle\KernelBrowser
      */
     protected function createAuthenticatedClient($username = 'user', $password = 'password')
     {
@@ -28,17 +28,25 @@ class WapiAutenticationTest extends WebTestCase
             json_encode([
                 'username' => $username,
                 'password' => $password,
-            ])
+            ], JSON_THROW_ON_ERROR)
         );
 
-        $data = json_decode($client->getResponse()->getContent(), true);
+        $data = json_decode((string) $client->getResponse()->getContent(), true, 512, JSON_THROW_ON_ERROR);
 
         $client->setServerParameter('HTTP_Authorization', sprintf('Bearer %s', $data['token']));
 
         return $client;
     }
 
-    public function testAccessSecuredWebApiEndopintWithToken()
+    public function testDenyAccessToSecuredWebApiEndopint(): void
+    {
+        $client = static::createClient();
+        $client->request('GET', '/wapi/placeholder');
+
+        self::assertResponseStatusCodeSame(401);
+    }
+
+    public function testAccessSecuredWebApiEndopintWithToken(): void
     {
         $client = $this->createAuthenticatedClient('admin@example.com', 'admin');
         $client->request('GET', '/wapi/placeholder');
@@ -46,7 +54,7 @@ class WapiAutenticationTest extends WebTestCase
         self::assertResponseIsSuccessful();
     }
 
-    public function testRefreshToken()
+    public function testRefreshToken(): void
     {
         $client = static::createClient();
         $client->request(
@@ -63,10 +71,9 @@ class WapiAutenticationTest extends WebTestCase
             ])
         );
 
-        $data = json_decode($client->getResponse()->getContent(), true);
+        $data = json_decode((string) $client->getResponse()->getContent(), true, 512, JSON_THROW_ON_ERROR);
 
-        //$client->setServerParameter('HTTP_Authorization', sprintf('Bearer %s', $data['token']));
-
+        $refreshToken = $data['refresh_token'];
 
         $client->request(
             'POST',
@@ -77,12 +84,16 @@ class WapiAutenticationTest extends WebTestCase
                 'CONTENT_TYPE' => 'application/json',
             ],
             json_encode([
-                'refresh_token' => $data['refresh_token'],
+                'refresh_token' => $refreshToken,
 
-            ]),
-
+            ], JSON_THROW_ON_ERROR),
         );
 
+        $responseData = json_decode((string) $client->getResponse()->getContent(), true, 512, JSON_THROW_ON_ERROR);
+
         self::assertResponseIsSuccessful();
+
+        self::assertArrayHasKey('token', $responseData);
+        self::assertArrayHasKey('refresh_token', $responseData);
     }
 }
