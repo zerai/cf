@@ -1,6 +1,12 @@
 name: Commit stage
 
-on: [ push ]
+on:
+  workflow_call:
+      # Map the workflow outputs to job outputs
+      inputs:
+        triggering-sha:
+          required: true
+          type: string
 
 
 env:
@@ -23,6 +29,15 @@ env:
 
 
 jobs:
+  triggering-workflow-info:
+    runs-on: ubuntu-18.04
+    name: Triggering workflow info
+    steps:
+      - name: Dump context
+        uses: crazy-max/ghaction-dump-context@v1
+      - name: Dump input triggering-sha
+        run: echo triggering-sha ${{ inputs.triggering-sha }}
+
   app-unit-test:
     name: App unit test
     runs-on: ubuntu-18.04
@@ -40,7 +55,10 @@ jobs:
 #            experimental: true
       fail-fast: true
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout on SHA-${{ inputs.triggering-sha }}
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ inputs.triggering-sha }}
 
       - name: Setup cache environment
         id: cache-php-extensions
@@ -142,7 +160,10 @@ jobs:
           - '8.1'
       fail-fast: true
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout on SHA-${{ inputs.triggering-sha }}
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ inputs.triggering-sha }}
 
       - name: Setup cache environment
         id: cache-php-extensions
@@ -204,7 +225,10 @@ jobs:
           - '8.1'
       fail-fast: true
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout on SHA-${{ inputs.triggering-sha }}
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ inputs.triggering-sha }}
 
       - name: Setup cache environment
         id: cache-php-extensions
@@ -266,7 +290,10 @@ jobs:
           - '8.1'
       fail-fast: true
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout on SHA-${{ inputs.triggering-sha }}
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ inputs.triggering-sha }}
 
       - name: Setup cache environment
         id: cache-php-extensions
@@ -326,7 +353,10 @@ jobs:
           - '8.1'
       fail-fast: true
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout on SHA-${{ inputs.triggering-sha }}
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ inputs.triggering-sha }}
 
       - name: Setup cache environment
         id: cache-php-extensions
