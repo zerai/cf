@@ -25,10 +25,10 @@ jobs:
           - '8.1'
         coverage: [true]
         experimental: [false]
-        include:
-          - php: '8.2'
-            coverage: false
-            experimental: true
+#        include:
+#          - php: '8.2'
+#            coverage: false
+#            experimental: true
       fail-fast: true
     steps:
       - uses: actions/checkout@v3
