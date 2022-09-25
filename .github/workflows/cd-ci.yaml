@@ -9,10 +9,10 @@ jobs:
     with:
       triggering-sha: "${{ github.sha }}"
 
-  call-acceptance-stage-workflow:
+  acceptance-stage-workflow:
     name: Acceptance Stage
     needs:
       - commit-stage-workflow
-    uses: zerai/cf/.github/workflows/acceptance-stage.yaml@master
+    uses: zerai/cf/.github/workflows/acceptance-stage.yaml@main
     with:
       triggering-sha: "${{ github.sha }}"
