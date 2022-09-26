@@ -90,3 +90,200 @@ jobs:
 
       - name: Run composer normalize
         run: composer-normalize --dry-run --ansi
+
+      - name: Validate configurations files
+        run: ./bin/console lint:yaml config/ --ansi
+
+      - name: Validate Symfony containers (prod|dev)
+        run: |
+          ./bin/console lint:container -e prod --ansi
+          ./bin/console lint:container -e dev --ansi
+
+  app-integration-test:
+    name: Integretion test
+    runs-on: ubuntu-18.04
+    timeout-minutes: 5
+    services:
+      pgsql:
+        image: postgres:14-alpine
+        env:
+          POSTGRES_DB: ci-db_test
+          POSTGRES_PASSWORD: ci-db-password
+          POSTGRES_USER: ci-db-user
+        ports:
+          - 5432/tcp
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 3
+    strategy:
+      matrix:
+        php:
+          - '8.1'
+      fail-fast: true
+    steps:
+      - name: Checkout on SHA-${{ inputs.triggering-sha }}
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ inputs.triggering-sha }}
+
+      - name: Setup cache environment
+        id: cache-php-extensions
+        if: ${{ env.GITHUB_CACHE_PHP_EXTENSION  == '1' }}
+        uses: shivammathur/cache-extensions@v1
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: ${{ env.PHP_EXTENSIONS }}
+          key: ${{ env.PHP_EXTENSIONS_CACHE_KEY }}-php${{ matrix.php }}
+
+      - name: Cache extensions
+        if: ${{ env.GITHUB_CACHE_PHP_EXTENSION  == '1' }}
+        uses: actions/cache@v3
+        with:
+          path: ${{ steps.cache-php-extensions.outputs.dir }}
+          key: ${{ steps.cache-php-extensions.outputs.key }}
+          restore-keys: ${{ steps.cache-php-extensions.outputs.key }}
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: ${{ env.PHP_EXTENSIONS }}
+          ini-values: memory_limit=-1
+          coverage: xdebug
+          tools: composer,symfony
+
+      - name: Set Composer Cache Directory
+        if: ${{ env.GITHUB_CACHE_COMPOSER_ENABLED  == '1' }}
+        id: composer-cache
+        run: |
+          echo "::set-output name=dir::$(composer config cache-files-dir)"
+
+      - name: Cache Composer dependencies
+        uses: actions/cache@v3
+        if: ${{ env.GITHUB_CACHE_COMPOSER_ENABLED  == '1' }}
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-php-${{ matrix.php }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-php-${{ matrix.php }}-composer-
+
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-progress --ansi
+
+      - name: Run database schema update
+        run: ./bin/console doctrine:schema:update -e test --force --ansi
+        env:
+          DATABASE_URL: postgresql://ci-db-user:ci-db-password@127.0.0.1:${{ job.services.pgsql.ports['5432'] }}/ci-db?serverVersion=14&charset=utf8
+
+      - name: Run database test fixture
+        run: ./bin/console doctrine:fixtures:load -e test -n --ansi
+        env:
+          DATABASE_URL: postgresql://ci-db-user:ci-db-password@127.0.0.1:${{ job.services.pgsql.ports['5432'] }}/ci-db?serverVersion=14&charset=utf8
+
+      #
+      # TODO:  SETUP INTEGRATION TESTSUITE
+      #
+      - name: Run integration test
+        run: bin/phpunit tests/Unit
+        env:
+          APP_ENV: test
+          DATABASE_URL: postgresql://ci-db-user:ci-db-password@127.0.0.1:${{ job.services.pgsql.ports['5432'] }}/ci-db?serverVersion=14&charset=utf8
+
+
+  app-functional-test:
+    name: Functional test
+    runs-on: ubuntu-18.04
+    timeout-minutes: 5
+    services:
+      pgsql:
+        image: postgres:14-alpine
+        env:
+          POSTGRES_DB: ci-db_test
+          POSTGRES_PASSWORD: ci-db-password
+          POSTGRES_USER: ci-db-user
+        ports:
+          - 5432/tcp
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 3
+    strategy:
+      matrix:
+        php:
+          - '8.1'
+      fail-fast: true
+    steps:
+      - name: Checkout on SHA-${{ inputs.triggering-sha }}
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ inputs.triggering-sha }}
+
+      - name: Setup cache environment
+        id: cache-php-extensions
+        if: ${{ env.GITHUB_CACHE_PHP_EXTENSION  == '1' }}
+        uses: shivammathur/cache-extensions@v1
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: ${{ env.PHP_EXTENSIONS }}
+          key: ${{ env.PHP_EXTENSIONS_CACHE_KEY }}-php${{ matrix.php }}
+
+      - name: Cache extensions
+        if: ${{ env.GITHUB_CACHE_PHP_EXTENSION  == '1' }}
+        uses: actions/cache@v3
+        with:
+          path: ${{ steps.cache-php-extensions.outputs.dir }}
+          key: ${{ steps.cache-php-extensions.outputs.key }}
+          restore-keys: ${{ steps.cache-php-extensions.outputs.key }}
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: ${{ env.PHP_EXTENSIONS }}
+          ini-values: memory_limit=-1
+          coverage: xdebug
+          tools: composer,symfony
+
+      - name: Set Composer Cache Directory
+        if: ${{ env.GITHUB_CACHE_COMPOSER_ENABLED  == '1' }}
+        id: composer-cache
+        run: |
+          echo "::set-output name=dir::$(composer config cache-files-dir)"
+
+      - name: Cache Composer dependencies
+        uses: actions/cache@v3
+        if: ${{ env.GITHUB_CACHE_COMPOSER_ENABLED  == '1' }}
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-php-${{ matrix.php }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-php-${{ matrix.php }}-composer-
+
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-progress --ansi
+
+      - name: Run database schema update
+        run: ./bin/console doctrine:schema:update -e test --force --ansi
+        env:
+          DATABASE_URL: postgresql://ci-db-user:ci-db-password@127.0.0.1:${{ job.services.pgsql.ports['5432'] }}/ci-db?serverVersion=14&charset=utf8
+
+      - name: Run database test fixture
+        run: ./bin/console doctrine:fixtures:load -e test -n --ansi
+        env:
+          DATABASE_URL: postgresql://ci-db-user:ci-db-password@127.0.0.1:${{ job.services.pgsql.ports['5432'] }}/ci-db?serverVersion=14&charset=utf8
+
+      - name: Run webserver
+        run: symfony server:start --dir=public --daemon --no-tls
+
+      - name: Check JWT configuration
+        run: |
+          ./bin/console lexik:jwt:check-config
+          ./bin/console lexik:jwt:check-config -e test
+
+      - name: Run functional test
+        run: bin/phpunit tests/Functional
+        env:
+          DATABASE_URL: postgresql://ci-db-user:ci-db-password@127.0.0.1:${{ job.services.pgsql.ports['5432'] }}/ci-db?serverVersion=14&charset=utf8
