@@ -10,8 +10,9 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 class AdminBaseUserFixtures extends Fixture implements FixtureGroupInterface
 {
-    public function __construct(private readonly UserPasswordHasherInterface $passwordEncoder)
-    {
+    public function __construct(
+        private readonly UserPasswordHasherInterface $passwordEncoder
+    ) {
     }
 
     public function load(ObjectManager $manager): void
