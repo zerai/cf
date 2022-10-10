@@ -245,7 +245,7 @@ jobs:
           extensions: ${{ env.PHP_EXTENSIONS }}
           ini-values: memory_limit=-1
           coverage: xdebug
-          tools: composer,symfony
+          tools: composer,symfony-cli
 
       - name: Set Composer Cache Directory
         if: ${{ env.GITHUB_CACHE_COMPOSER_ENABLED  == '1' }}
