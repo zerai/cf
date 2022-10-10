@@ -183,10 +183,22 @@ jobs:
           DATABASE_URL: postgresql://ci-db-user:ci-db-password@127.0.0.1:${{ job.services.pgsql.ports['5432'] }}/ci-db?serverVersion=14&charset=utf8
 
       #
-      # TODO:  SETUP INTEGRATION TESTSUITE
+      # TODO:  SETUP INTEGRATION TESTSUITE FOR APP, IAM, VEHICLE REPORTING
       #
       - name: Run integration test
-        run: bin/phpunit tests/Unit
+        run: bin/phpunit tests/Integration
+        env:
+          APP_ENV: test
+          DATABASE_URL: postgresql://ci-db-user:ci-db-password@127.0.0.1:${{ job.services.pgsql.ports['5432'] }}/ci-db?serverVersion=14&charset=utf8
+
+      - name: Run integration test for iam
+        run: bin/phpunit _iam/tests/Integration
+        env:
+          APP_ENV: test
+          DATABASE_URL: postgresql://ci-db-user:ci-db-password@127.0.0.1:${{ job.services.pgsql.ports['5432'] }}/ci-db?serverVersion=14&charset=utf8
+
+      - name: Run integration test for vehicle reporting
+        run: bin/phpunit _vehiclereporting/tests/Integration
         env:
           APP_ENV: test
           DATABASE_URL: postgresql://ci-db-user:ci-db-password@127.0.0.1:${{ job.services.pgsql.ports['5432'] }}/ci-db?serverVersion=14&charset=utf8
