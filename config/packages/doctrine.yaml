@@ -15,6 +15,12 @@ doctrine:
                 dir: '%kernel.project_dir%/src/Entity'
                 prefix: 'App\Entity'
                 alias: App
+            BaseAccount:
+                is_bundle: false
+                type: xml
+                dir: '%kernel.project_dir%/_iam/src/Adapter/Persistence/Conf'
+                prefix: 'Iam\Application\Model'
+                alias: BaseAccount
 
 when@test:
     doctrine:
