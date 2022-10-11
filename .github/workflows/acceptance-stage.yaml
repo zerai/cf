@@ -100,7 +100,7 @@ jobs:
           ./bin/console lint:container -e dev --ansi
 
   app-integration-test:
-    name: Integretion test
+    name: Integration test
     runs-on: ubuntu-18.04
     timeout-minutes: 5
     services:
