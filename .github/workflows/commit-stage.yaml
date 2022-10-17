@@ -1,0 +1,407 @@
+name: Commit stage
+
+on:
+  workflow_call:
+      # Map the workflow outputs to job outputs
+      inputs:
+        triggering-sha:
+          required: true
+          type: string
+
+
+env:
+  GITHUB_CACHE_PHP_EXTENSION: '1'
+  PHP_EXTENSIONS: ctype, curl, gd, iconv, intl, opcache, openssl, mbstring, mysql, pdo_sqlite
+  PHP_EXTENSIONS_CACHE_KEY: cache-php-extensions-v1
+  GITHUB_CACHE_COMPOSER_ENABLED: '1'
+  # COVERAGE FILES
+  COVERAGE_APP_UNIT_ARTIFATC_NAME: 'Coverage-reports-app-unit-on-SHA'
+  COVERAGE_CLOVER_APP_UNIT_FILENAME: 'coverage-app-unit-test-clover.xml'
+  COVERAGE_LOGJUNIT_APP_UNIT_FILENAME: 'coverage-app-unit-test-junit.xml'
+  # IAM COVERAGE FILES
+  COVERAGE_IAM_UNIT_ARTIFATC_NAME: 'Coverage-reports-iam-unit-on-SHA'
+  COVERAGE_CLOVER_IAM_UNIT_FILENAME: 'coverage-iam-unit-test-clover.xml'
+  COVERAGE_LOGJUNIT_IAM_UNIT_FILENAME: 'coverage-iam-unit-test-junit.xml'
+  # VR COVERAGE FILES (Vehicle Reporting)
+  COVERAGE_VR_UNIT_ARTIFATC_NAME: 'Coverage-reports-vr-unit-on-SHA'
+  COVERAGE_CLOVER_VR_UNIT_FILENAME: 'coverage-vr-unit-test-clover.xml'
+  COVERAGE_LOGJUNIT_VR_UNIT_FILENAME: 'coverage-vr-unit-test-junit.xml'
+
+
+jobs:
+  triggering-workflow-info:
+    runs-on: ubuntu-18.04
+    name: Triggering workflow info
+    steps:
+      - name: Dump context
+        uses: crazy-max/ghaction-dump-context@v1
+      - name: Dump input triggering-sha
+        run: echo triggering-sha ${{ inputs.triggering-sha }}
+
+  app-unit-test:
+    name: App unit test
+    runs-on: ubuntu-18.04
+    timeout-minutes: 3
+    continue-on-error: ${{ matrix.experimental }}
+    strategy:
+      matrix:
+        php:
+          - '8.1'
+        coverage: [true]
+        experimental: [false]
+#        include:
+#          - php: '8.2'
+#            coverage: false
+#            experimental: true
+      fail-fast: true
+    steps:
+      - name: Checkout on SHA-${{ inputs.triggering-sha }}
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ inputs.triggering-sha }}
+
+      - name: Setup cache environment
+        id: cache-php-extensions
+        if: ${{ env.GITHUB_CACHE_PHP_EXTENSION  == '1' }}
+        uses: shivammathur/cache-extensions@v1
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: ${{ env.PHP_EXTENSIONS }}
+          key: ${{ env.PHP_EXTENSIONS_CACHE_KEY }}-php${{ matrix.php }}
+
+      - name: Cache extensions
+        if: ${{ env.GITHUB_CACHE_PHP_EXTENSION  == '1' }}
+        uses: actions/cache@v3
+        with:
+          path: ${{ steps.cache-php-extensions.outputs.dir }}
+          key: ${{ steps.cache-php-extensions.outputs.key }}
+          restore-keys: ${{ steps.cache-php-extensions.outputs.key }}
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: ${{ env.PHP_EXTENSIONS }}
+          ini-values: memory_limit=-1
+          coverage: xdebug
+
+      - name: Set Composer Cache Directory
+        if: ${{ env.GITHUB_CACHE_COMPOSER_ENABLED  == '1' }}
+        id: composer-cache
+        run: |
+          echo "::set-output name=dir::$(composer config cache-files-dir)"
+
+      - name: Cache Composer dependencies
+        uses: actions/cache@v3
+        if: ${{ env.GITHUB_CACHE_COMPOSER_ENABLED  == '1' }}
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-php-${{ matrix.php }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-php-${{ matrix.php }}-composer-
+
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-progress --ansi
+
+      - name: Run app unit test
+        if: (!matrix.coverage)
+        run: bin/phpunit --testsuite app-unit
+        env:
+          SYMFONY_DEPRECATIONS_HELPER: disabled
+
+      - name: Run app unit test suite WITH COVERAGE
+        if: matrix.coverage
+        run: |
+          bin/phpunit --testsuite app-unit \
+          --coverage-clover $COVERAGE_CLOVER_APP_UNIT_FILENAME \
+          --log-junit $COVERAGE_LOGJUNIT_APP_UNIT_FILENAME
+        env:
+          SYMFONY_DEPRECATIONS_HELPER: disabled
+
+      - name: Run IAM unit test
+        if: (!matrix.coverage)
+        run: bin/phpunit --testsuite iam-unit
+        env:
+          SYMFONY_DEPRECATIONS_HELPER: disabled
+
+      - name: Run IAM unit test suite WITH COVERAGE
+        if: matrix.coverage
+        run: |
+          bin/phpunit --testsuite iam-unit \
+          --coverage-clover $COVERAGE_CLOVER_IAM_UNIT_FILENAME \
+          --log-junit $COVERAGE_LOGJUNIT_IAM_UNIT_FILENAME
+        env:
+          SYMFONY_DEPRECATIONS_HELPER: disabled
+
+      - name: Run VEHICLE-REPORTING unit test
+        if: (!matrix.coverage)
+        run: bin/phpunit --testsuite vr-unit
+        env:
+          SYMFONY_DEPRECATIONS_HELPER: disabled
+
+      - name: Run VEHICLE-REPORTING unit test suite WITH COVERAGE
+        if: matrix.coverage
+        run: |
+          bin/phpunit --testsuite vr-unit \
+          --coverage-clover $COVERAGE_CLOVER_VR_UNIT_FILENAME \
+          --log-junit $COVERAGE_LOGJUNIT_VR_UNIT_FILENAME
+        env:
+          SYMFONY_DEPRECATIONS_HELPER: disabled
+
+
+
+  coding-standard:
+    name: Coding Standard
+    runs-on: ubuntu-18.04
+    timeout-minutes: 3
+    strategy:
+      matrix:
+        php:
+          - '8.1'
+      fail-fast: true
+    steps:
+      - name: Checkout on SHA-${{ inputs.triggering-sha }}
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ inputs.triggering-sha }}
+
+      - name: Setup cache environment
+        id: cache-php-extensions
+        if: ${{ env.GITHUB_CACHE_PHP_EXTENSION  == '1' }}
+        uses: shivammathur/cache-extensions@v1
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: ${{ env.PHP_EXTENSIONS }}
+          key: ${{ env.PHP_EXTENSIONS_CACHE_KEY }}-php${{ matrix.php }}
+
+      - name: Cache extensions
+        if: ${{ env.GITHUB_CACHE_PHP_EXTENSION  == '1' }}
+        uses: actions/cache@v3
+        with:
+          path: ${{ steps.cache-php-extensions.outputs.dir }}
+          key: ${{ steps.cache-php-extensions.outputs.key }}
+          restore-keys: ${{ steps.cache-php-extensions.outputs.key }}
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: ${{ env.PHP_EXTENSIONS }}
+          ini-values: memory_limit=-1
+          coverage: none
+
+      - name: Set Composer Cache Directory
+        if: ${{ env.GITHUB_CACHE_COMPOSER_ENABLED  == '1' }}
+        id: composer-cache
+        run: |
+          echo "::set-output name=dir::$(composer config cache-files-dir)"
+
+      - name: Cache Composer dependencies
+        uses: actions/cache@v3
+        if: ${{ env.GITHUB_CACHE_COMPOSER_ENABLED  == '1' }}
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-php-${{ matrix.php }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-php-${{ matrix.php }}-composer-
+
+      - name: Install dependencies
+        run: |
+          composer install --prefer-dist --no-progress --ansi
+          composer bin ecs install --no-progress --ansi
+
+      - name: Run easy-coding-standard
+        run: vendor/bin/ecs check --ansi
+
+
+
+  static-analisys:
+    name: SA psalm
+    runs-on: ubuntu-18.04
+    timeout-minutes: 3
+    strategy:
+      matrix:
+        php:
+          - '8.1'
+      fail-fast: true
+    steps:
+      - name: Checkout on SHA-${{ inputs.triggering-sha }}
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ inputs.triggering-sha }}
+
+      - name: Setup cache environment
+        id: cache-php-extensions
+        if: ${{ env.GITHUB_CACHE_PHP_EXTENSION  == '1' }}
+        uses: shivammathur/cache-extensions@v1
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: ${{ env.PHP_EXTENSIONS }}
+          key: ${{ env.PHP_EXTENSIONS_CACHE_KEY }}-php${{ matrix.php }}
+
+      - name: Cache extensions
+        if: ${{ env.GITHUB_CACHE_PHP_EXTENSION  == '1' }}
+        uses: actions/cache@v3
+        with:
+          path: ${{ steps.cache-php-extensions.outputs.dir }}
+          key: ${{ steps.cache-php-extensions.outputs.key }}
+          restore-keys: ${{ steps.cache-php-extensions.outputs.key }}
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: ${{ env.PHP_EXTENSIONS }}
+          ini-values: memory_limit=-1
+          coverage: none
+
+      - name: Set Composer Cache Directory
+        if: ${{ env.GITHUB_CACHE_COMPOSER_ENABLED  == '1' }}
+        id: composer-cache
+        run: |
+          echo "::set-output name=dir::$(composer config cache-files-dir)"
+
+      - name: Cache Composer dependencies
+        uses: actions/cache@v3
+        if: ${{ env.GITHUB_CACHE_COMPOSER_ENABLED  == '1' }}
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-php-${{ matrix.php }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-php-${{ matrix.php }}-composer-
+
+      - name: Install dependencies
+        run: |
+          composer install --prefer-dist --no-progress --ansi
+          composer bin psalm install --no-progress --ansi
+
+      - name: Run psalm static analisys
+        run: vendor/bin/psalm
+
+
+
+  Architecture-check:
+    name: Architecture check
+    runs-on: ubuntu-18.04
+    timeout-minutes: 3
+    strategy:
+      matrix:
+        php:
+          - '8.1'
+      fail-fast: true
+    steps:
+      - name: Checkout on SHA-${{ inputs.triggering-sha }}
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ inputs.triggering-sha }}
+
+      - name: Setup cache environment
+        id: cache-php-extensions
+        if: ${{ env.GITHUB_CACHE_PHP_EXTENSION  == '1' }}
+        uses: shivammathur/cache-extensions@v1
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: ${{ env.PHP_EXTENSIONS }}
+          key: ${{ env.PHP_EXTENSIONS_CACHE_KEY }}-php${{ matrix.php }}
+
+      - name: Cache extensions
+        if: ${{ env.GITHUB_CACHE_PHP_EXTENSION  == '1' }}
+        uses: actions/cache@v3
+        with:
+          path: ${{ steps.cache-php-extensions.outputs.dir }}
+          key: ${{ steps.cache-php-extensions.outputs.key }}
+          restore-keys: ${{ steps.cache-php-extensions.outputs.key }}
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: ${{ env.PHP_EXTENSIONS }}
+          ini-values: memory_limit=-1
+          coverage: none
+
+      - name: Set Composer Cache Directory
+        if: ${{ env.GITHUB_CACHE_COMPOSER_ENABLED  == '1' }}
+        id: composer-cache
+        run: |
+          echo "::set-output name=dir::$(composer config cache-files-dir)"
+
+      - name: Cache Composer dependencies
+        uses: actions/cache@v3
+        if: ${{ env.GITHUB_CACHE_COMPOSER_ENABLED  == '1' }}
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-php-${{ matrix.php }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-php-${{ matrix.php }}-composer-
+
+      - name: Install dependencies
+        run: |
+          composer install --prefer-dist --no-progress --ansi
+          composer bin phparkitect install --no-progress --ansi
+
+      - name: Run phparkitect
+        run: vendor/bin/phparkitect check --ansi
+
+  rector-check:
+    name: Rector check
+    runs-on: ubuntu-18.04
+    timeout-minutes: 3
+    strategy:
+      matrix:
+        php:
+          - '8.1'
+      fail-fast: true
+    steps:
+      - name: Checkout on SHA-${{ inputs.triggering-sha }}
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ inputs.triggering-sha }}
+
+      - name: Setup cache environment
+        id: cache-php-extensions
+        if: ${{ env.GITHUB_CACHE_PHP_EXTENSION  == '1' }}
+        uses: shivammathur/cache-extensions@v1
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: ${{ env.PHP_EXTENSIONS }}
+          key: ${{ env.PHP_EXTENSIONS_CACHE_KEY }}-php${{ matrix.php }}
+
+      - name: Cache extensions
+        if: ${{ env.GITHUB_CACHE_PHP_EXTENSION  == '1' }}
+        uses: actions/cache@v3
+        with:
+          path: ${{ steps.cache-php-extensions.outputs.dir }}
+          key: ${{ steps.cache-php-extensions.outputs.key }}
+          restore-keys: ${{ steps.cache-php-extensions.outputs.key }}
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: ${{ env.PHP_EXTENSIONS }}
+          ini-values: memory_limit=-1
+          coverage: none
+
+      - name: Set Composer Cache Directory
+        if: ${{ env.GITHUB_CACHE_COMPOSER_ENABLED  == '1' }}
+        id: composer-cache
+        run: |
+          echo "::set-output name=dir::$(composer config cache-files-dir)"
+
+      - name: Cache Composer dependencies
+        uses: actions/cache@v3
+        if: ${{ env.GITHUB_CACHE_COMPOSER_ENABLED  == '1' }}
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-php-${{ matrix.php }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-php-${{ matrix.php }}-composer-
+
+      - name: Install dependencies
+        run: |
+          composer install --prefer-dist --no-progress --ansi
+          composer bin rector install --no-progress --ansi
+
+      - name: Run rector
+        run: vendor/bin/rector process --dry-run
