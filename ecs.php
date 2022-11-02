@@ -76,6 +76,10 @@ return static function (ECSConfig $ecsConfig): void {
         SetList::PHPUNIT,
     ]);
 
+    $ecsConfig->ruleWithConfiguration(PhpUnitTestAnnotationFixer::class, [
+        'style' => 'annotation',
+    ]);
+
     $header = <<<'EOF'
     This file is part of the zerai/cf application
         
@@ -94,8 +98,5 @@ return static function (ECSConfig $ecsConfig): void {
         'header' => trim($header),
         'location' => 'after_declare_strict',
         'separate' => 'both',
-    ]);
-    $ecsConfig->ruleWithConfiguration(PhpUnitTestAnnotationFixer::class, [
-        'style' => 'annotation',
     ]);
 };

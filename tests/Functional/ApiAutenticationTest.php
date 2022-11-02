@@ -38,7 +38,10 @@ class ApiAutenticationTest extends WebTestCase
         return $client;
     }
 
-    public function testDenyAccessToSecuredApiEndopint(): void
+    /**
+     * @test
+     */
+    public function denyAccessToSecuredApiEndopint(): void
     {
         $client = static::createClient();
         $client->request('GET', '/api/placeholder');
@@ -46,7 +49,10 @@ class ApiAutenticationTest extends WebTestCase
         self::assertResponseStatusCodeSame(401);
     }
 
-    public function testAccessSecuredApiEndopintWithToken(): void
+    /**
+     * @test
+     */
+    public function accessSecuredApiEndopintWithToken(): void
     {
         $client = $this->createAuthenticatedClient('admin@example.com', 'admin');
         $client->request('GET', '/api/placeholder');
@@ -54,7 +60,10 @@ class ApiAutenticationTest extends WebTestCase
         self::assertResponseIsSuccessful();
     }
 
-    public function testRefreshToken(): void
+    /**
+     * @test
+     */
+    public function refreshToken(): void
     {
         $client = static::createClient();
         $client->request(

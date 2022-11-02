@@ -38,7 +38,10 @@ class WapiAutenticationTest extends WebTestCase
         return $client;
     }
 
-    public function testDenyAccessToSecuredWebApiEndopint(): void
+    /**
+     * @test
+     */
+    public function denyAccessToSecuredWebApiEndopint(): void
     {
         $client = static::createClient();
         $client->request('GET', '/wapi/placeholder');
@@ -46,7 +49,10 @@ class WapiAutenticationTest extends WebTestCase
         self::assertResponseStatusCodeSame(401);
     }
 
-    public function testAccessSecuredWebApiEndopintWithToken(): void
+    /**
+     * @test
+     */
+    public function accessSecuredWebApiEndopintWithToken(): void
     {
         $client = $this->createAuthenticatedClient('admin@example.com', 'admin');
         $client->request('GET', '/wapi/placeholder');
@@ -54,7 +60,10 @@ class WapiAutenticationTest extends WebTestCase
         self::assertResponseIsSuccessful();
     }
 
-    public function testRefreshToken(): void
+    /**
+     * @test
+     */
+    public function refreshToken(): void
     {
         $client = static::createClient();
         $client->request(
