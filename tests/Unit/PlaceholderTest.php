@@ -6,7 +6,10 @@ use PHPUnit\Framework\TestCase;
 
 class PlaceholderTest extends TestCase
 {
-    public function testPlaceholder(): void
+    /**
+     * @test
+     */
+    public function placeholder(): void
     {
         self::assertTrue(true);
     }
