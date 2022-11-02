@@ -340,8 +340,16 @@ jobs:
           composer install --prefer-dist --no-progress --ansi
           composer bin phparkitect install --no-progress --ansi
 
-      - name: Run phparkitect
-        run: vendor/bin/phparkitect check --ansi
+      - name: Run phparkitect GENERAL ARCHITECTURE CHECKS
+        run: vendor/bin/phparkitect check
+
+      - name: Run phparkitect IAM MODULE ARCHITECTURE CHECKS
+        run: vendor/bin/phparkitect check --config phparkitect-iam.php
+
+      - name: Run phparkitect VEHICLEREPORTING MODULE ARCHITECTURE CHECKS
+        run: vendor/bin/phparkitect check --config phparkitect-vehiclereporting.php
+
+
 
   rector-check:
     name: Rector check
