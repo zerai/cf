@@ -21,6 +21,9 @@ return static function (ECSConfig $ecsConfig): void {
         __DIR__ . '/_vehiclereporting/src',
         __DIR__ . '/_vehiclereporting/tests',
         __DIR__ . '/ecs.php',
+        __DIR__ . '/phparkitect.php',
+        __DIR__ . '/phparkitect-iam.php',
+        __DIR__ . '/phparkitect-vehiclereporting.php',
     ]);
 
     $ecsConfig->skip([
