@@ -4,9 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "7bb9cd630de99ce13522d6eff1a00d14",
-    "packages": [],
-    "packages-dev": [
+    "content-hash": "51e868824bb0766c158eee25a84716ba",
+    "packages": [
         {
             "name": "nikic/php-parser",
             "version": "v4.15.1",
@@ -65,16 +64,16 @@
         },
         {
             "name": "phparkitect/phparkitect",
-            "version": "0.3.1",
+            "version": "0.3.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/phparkitect/arkitect.git",
-                "reference": "1b1ce53edc1b47093a0d53a325f382a5bd15ee1f"
+                "reference": "39d6c34f1f8f8ed39cd3e22fd285f46da43b0544"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phparkitect/arkitect/zipball/1b1ce53edc1b47093a0d53a325f382a5bd15ee1f",
-                "reference": "1b1ce53edc1b47093a0d53a325f382a5bd15ee1f",
+                "url": "https://api.github.com/repos/phparkitect/arkitect/zipball/39d6c34f1f8f8ed39cd3e22fd285f46da43b0544",
+                "reference": "39d6c34f1f8f8ed39cd3e22fd285f46da43b0544",
                 "shasum": ""
             },
             "require": {
@@ -130,9 +129,9 @@
             "description": "Enforce architectural constraints in your PHP applications",
             "support": {
                 "issues": "https://github.com/phparkitect/arkitect/issues",
-                "source": "https://github.com/phparkitect/arkitect/tree/0.3.1"
+                "source": "https://github.com/phparkitect/arkitect/tree/0.3.0"
             },
-            "time": "2022-11-05T15:15:48+00:00"
+            "time": "2022-10-30T12:27:21+00:00"
         },
         {
             "name": "psr/container",
@@ -1268,6 +1267,7 @@
             "time": "2022-06-03T18:03:27+00:00"
         }
     ],
+    "packages-dev": [],
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": [],
