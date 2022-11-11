@@ -16,7 +16,7 @@ env:
 
 jobs:
   triggering-workflow-info:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     name: Triggering workflow info
     steps:
       - name: Dump context
@@ -28,7 +28,7 @@ jobs:
 
   app-preconditions-checks:
     name: App preconditions checks
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     timeout-minutes: 5
     strategy:
       matrix:
@@ -71,7 +71,7 @@ jobs:
         if: ${{ env.GITHUB_CACHE_COMPOSER_ENABLED  == '1' }}
         id: composer-cache
         run: |
-          echo "::set-output name=dir::$(composer config cache-files-dir)"
+          echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
 
       - name: Cache Composer dependencies
         uses: actions/cache@v3
@@ -101,7 +101,7 @@ jobs:
 
   app-integration-test:
     name: Integration test
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     timeout-minutes: 5
     services:
       pgsql:
@@ -158,7 +158,7 @@ jobs:
         if: ${{ env.GITHUB_CACHE_COMPOSER_ENABLED  == '1' }}
         id: composer-cache
         run: |
-          echo "::set-output name=dir::$(composer config cache-files-dir)"
+          echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
 
       - name: Cache Composer dependencies
         uses: actions/cache@v3
@@ -206,7 +206,7 @@ jobs:
 
   app-functional-test:
     name: Functional test
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     timeout-minutes: 5
     services:
       pgsql:
@@ -263,7 +263,7 @@ jobs:
         if: ${{ env.GITHUB_CACHE_COMPOSER_ENABLED  == '1' }}
         id: composer-cache
         run: |
-          echo "::set-output name=dir::$(composer config cache-files-dir)"
+          echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
 
       - name: Cache Composer dependencies
         uses: actions/cache@v3
