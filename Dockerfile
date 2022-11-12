@@ -16,22 +16,23 @@ RUN apk add --no-cache --virtual .builddeps \
         wget
 
 RUN install-php-extensions  \
-    opcache \
-    apcu \
-    redis \
-    xsl \
-    zip \
-    yaml \
-    xlswriter \
-    pcntl \
     amqp \
+    apcu \
     gd \
+    intl \
+    yaml \
     mysqli \
+    opcache \
+    pcov \
+    pcntl \
     pdo_mysql \
-    pgsql \
     pdo_pgsql \
+    pgsql \
+    redis \
+    zip \
     xdebug \
-    pcov
+    xlswriter \
+    xsl
 
 # Install composer
 COPY --from=composer:2 /usr/bin/composer /usr/local/bin/composer
