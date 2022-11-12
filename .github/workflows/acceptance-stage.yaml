@@ -299,3 +299,68 @@ jobs:
         run: bin/phpunit tests/Functional
         env:
           DATABASE_URL: postgresql://ci-db-user:ci-db-password@127.0.0.1:${{ job.services.pgsql.ports['5432'] }}/ci-db?serverVersion=14&charset=utf8
+
+
+  mutation-tests:
+    name: Mutation tests
+    runs-on: ubuntu-20.04
+    timeout-minutes: 5
+    strategy:
+      matrix:
+        php:
+          - '8.1'
+      fail-fast: true
+    steps:
+      - name: Checkout on SHA-${{ inputs.triggering-sha }}
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ inputs.triggering-sha }}
+
+      - name: Setup cache environment
+        id: cache-php-extensions
+        if: ${{ env.GITHUB_CACHE_PHP_EXTENSION  == '1' }}
+        uses: shivammathur/cache-extensions@v1
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: ${{ env.PHP_EXTENSIONS }}
+          key: ${{ env.PHP_EXTENSIONS_CACHE_KEY }}-php${{ matrix.php }}
+
+      - name: Cache extensions
+        if: ${{ env.GITHUB_CACHE_PHP_EXTENSION  == '1' }}
+        uses: actions/cache@v3
+        with:
+          path: ${{ steps.cache-php-extensions.outputs.dir }}
+          key: ${{ steps.cache-php-extensions.outputs.key }}
+          restore-keys: ${{ steps.cache-php-extensions.outputs.key }}
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: ${{ env.PHP_EXTENSIONS }}
+          ini-values: memory_limit=-1
+          coverage: xdebug
+          tools: composer,composer-normalize:2.16.0
+
+      - name: Set Composer Cache Directory
+        if: ${{ env.GITHUB_CACHE_COMPOSER_ENABLED  == '1' }}
+        id: composer-cache
+        run: |
+          echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+
+      - name: Cache Composer dependencies
+        uses: actions/cache@v3
+        if: ${{ env.GITHUB_CACHE_COMPOSER_ENABLED  == '1' }}
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-php-${{ matrix.php }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-php-${{ matrix.php }}-composer-
+
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-progress --ansi
+
+      - name: Run infection
+        run: vendor/bin/infection
+
+
