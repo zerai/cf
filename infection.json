@@ -5,6 +5,9 @@
             "src",
             "_iam/src",
             "_vehiclereporting/src"
+        ],
+        "excludes": [
+            "src/DataFixtures"
         ]
     },
     "mutators": {
@@ -12,6 +15,11 @@
     },
     "phpUnit": {
         "configDir": "."
+    },
+    "logs": {
+        "text": "var\/infection\/infection-log.txt",
+        "summary": "var\/infection\/infection-summary.txt",
+        "perMutator": "var\/infection\/per-mutator.md"
     },
     "minMsi": 60,
     "minCoveredMsi": 60,

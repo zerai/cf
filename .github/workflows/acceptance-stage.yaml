@@ -360,7 +360,11 @@ jobs:
       - name: Install dependencies
         run: composer install --prefer-dist --no-progress --ansi
 
+      - name: Install infection
+        run: composer bin infection install
+
       - name: Run infection
-        run: vendor/bin/infection
+        run: vendor/bin/infection --ansi
+        continue-on-error: true
 
 
