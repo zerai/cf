@@ -16,5 +16,6 @@
     "minMsi": 60,
     "minCoveredMsi": 60,
     "timeout": 25,
-    "testFramework":"phpunit"
+    "testFramework":"phpunit",
+    "testFrameworkOptions": "--testsuite=iam-unit"
 }
