@@ -1,5 +1,5 @@
 {
     "require": {
-        "phparkitect/phparkitect": "0.3.0"
+        "phparkitect/phparkitect": "0.3.16"
     }
 }
