@@ -41,13 +41,5 @@
       "ignoreUnstable": false,
       "groupName": "PHP"
     }
-  ],
-  "vulnerabilityAlerts": {
-    "extends": [
-      ":automergeDisabled",
-      ":automergePr",
-      ":labels(security)"
-    ],
-    "rangeStrategy": "bump"
-  }
+  ]
 }
