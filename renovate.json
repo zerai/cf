@@ -1,0 +1,49 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "description": "Default configuration for repository. Taken from https://github.com/laminas/.github/blob/cbcde244afaa457a5a8fae957581ed9abf2a50da/renovate-config.json",
+  "extends": [
+    ":dependencyDashboard",
+    ":ignoreModulesAndTests",
+    ":automergeMinor",
+    ":automergeBranch",
+    ":rebaseStalePrs",
+    ":semanticCommitsDisabled",
+    ":separateMajorReleases",
+    ":combinePatchMinorReleases",
+    ":enableVulnerabilityAlerts",
+    ":timezone(UTC)",
+    ":label(renovate)",
+    "group:allNonMajor"
+  ],
+  "commitBodyTable": true,
+  "lockFileMaintenance": {
+    "enabled": true,
+    "extends": [
+      "schedule:daily"
+    ]
+  },
+  "platformAutomerge": true,
+  "prFooter": "About the use of [Renovate Bot](https://github.com/renovatebot/renovate) projects.",
+  "rangeStrategy": "replace",
+  "rollbackPrs": true,
+  "allow-plugins": true,
+  "installBeforeUpdate": true,
+  "packageRules": [
+    {
+      "rangeStrategy": "bump",
+      "matchPackageNames": [
+        "php"
+      ],
+      "excludePackagePatterns": [
+        "^symfony/"
+      ],
+      "enabled": true,
+      "extends": [
+        ":automergeDisabled",
+        ":automergePr"
+      ],
+      "ignoreUnstable": false,
+      "groupName": "PHP"
+    }
+  ]
+}
