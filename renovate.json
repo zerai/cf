@@ -28,7 +28,7 @@
   "rollbackPrs": true,
   "packageRules": [
     {
-      "rangeStrategy": "bump"
+      "rangeStrategy": "bump",
       "matchPackageNames": [
         "php"
       ],
