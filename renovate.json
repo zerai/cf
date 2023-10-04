@@ -33,7 +33,7 @@
         "php"
       ],
       "excludePackagePatterns": [
-        "^symfony"
+        "^symfony/"
       ],
       "extends": [
         ":automergeDisabled",
