@@ -29,8 +29,6 @@
   "packageRules": [
     {
       "rangeStrategy": "bump"
-    },
-    {
       "matchPackageNames": [
         "php"
       ],
