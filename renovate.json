@@ -36,6 +36,8 @@
         "^symfony/"
       ],
       "enabled": true,
+      "allow-plugins": true,
+      "installBeforeUpdate": true,
       "extends": [
         ":automergeDisabled",
         ":automergePr"
