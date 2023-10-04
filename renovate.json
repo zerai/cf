@@ -26,6 +26,8 @@
   "prFooter": "About the use of [Renovate Bot](https://github.com/renovatebot/renovate) projects.",
   "rangeStrategy": "replace",
   "rollbackPrs": true,
+  "allow-plugins": true,
+  "installBeforeUpdate": true,
   "packageRules": [
     {
       "rangeStrategy": "bump",
@@ -36,8 +38,6 @@
         "^symfony/"
       ],
       "enabled": true,
-      "allow-plugins": true,
-      "installBeforeUpdate": true,
       "extends": [
         ":automergeDisabled",
         ":automergePr"
