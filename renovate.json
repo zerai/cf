@@ -35,6 +35,7 @@
       "excludePackagePatterns": [
         "^symfony/"
       ],
+      "enabled": true,
       "extends": [
         ":automergeDisabled",
         ":automergePr"
