@@ -32,6 +32,9 @@
       "matchPackageNames": [
         "php"
       ],
+      "excludePackagePatterns": [
+        "^symfony"
+      ],
       "extends": [
         ":automergeDisabled",
         ":automergePr"
